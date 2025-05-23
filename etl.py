@@ -145,14 +145,14 @@ def etl_process():
         conn_dimensional = pyodbc.connect(
             f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
             f"SERVER={os.getenv('SQL_SERVER')};"
-            f"DATABASE={os.getenv('SQL_DB_RELACIONAL')};"
+            f"DATABASE={os.getenv('SQL_DB_DIMENSIONAL')};"
             f"UID={os.getenv('SQL_USER')};"
             f"PWD={os.getenv('SQL_PASSWORD')}"
         )
         conn_relacional = pyodbc.connect(
             f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
             f"SERVER={os.getenv('SQL_SERVER')};"
-            f"DATABASE={os.getenv('SQL_DB_DIMENSIONAL')};"
+            f"DATABASE={os.getenv('SQL_DB_RELACIONAL')};"
             f"UID={os.getenv('SQL_USER')};"
             f"PWD={os.getenv('SQL_PASSWORD')}"
         )
