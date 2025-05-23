@@ -3,11 +3,15 @@ from flask_cors import CORS, cross_origin
 import json
 from ia_sistema import predecir_clase_gbot, obtener_respuesta_gbot, intenciones_gbot
 from etl import etl_process 
+from dotenv import load_dotenv
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  
+load_dotenv()
 
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/chatbot": {"origins": "http://localhost:3004"},
-                            r"/run_etl_process": {"origins": "http://localhost:3004"}})
+cors = CORS(app, resources={r"/chatbot": {"origins": os.getenv('ORIGIN')},
+                            r"/run_etl_process": {"origins": os.getenv('ORIGIN')}})
 
 
 @app.route('/chatbot', methods=['POST'])
