@@ -2,6 +2,10 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import pyodbc
 import pandas as pd
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def extract_data(conn, query):
     return pd.read_sql(query, conn)
@@ -139,18 +143,18 @@ def load_desempeno(conn, df):
 def etl_process():
     try:
         conn_dimensional = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=ZENTOO;'
-            'DATABASE=pruebaBI;'
-            'UID=sa;'
-            'PWD=gamemode31'
+            f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
+            f"SERVER={os.getenv('SQL_SERVER')};"
+            f"DATABASE={os.getenv('SQL_DB_RELACIONAL')};"
+            f"UID={os.getenv('SQL_USER')};"
+            f"PWD={os.getenv('SQL_PASSWORD')}"
         )
         conn_relacional = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=ZENTOO;'
-            'DATABASE=BD_UCV_Notas;'
-            'UID=sa;'
-            'PWD=gamemode31'
+            f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
+            f"SERVER={os.getenv('SQL_SERVER')};"
+            f"DATABASE={os.getenv('SQL_DB_DIMENSIONAL')};"
+            f"UID={os.getenv('SQL_USER')};"
+            f"PWD={os.getenv('SQL_PASSWORD')}"
         )
         
         queries = [
