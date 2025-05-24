@@ -148,6 +148,7 @@ def etl_process():
             f"DATABASE={os.getenv('SQL_DB_DIMENSIONAL')};"
             f"UID={os.getenv('SQL_USER')};"
             f"PWD={os.getenv('SQL_PASSWORD')}"
+            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"  # Requerido para Azure
         )
         conn_relacional = pyodbc.connect(
             f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
@@ -155,6 +156,7 @@ def etl_process():
             f"DATABASE={os.getenv('SQL_DB_RELACIONAL')};"
             f"UID={os.getenv('SQL_USER')};"
             f"PWD={os.getenv('SQL_PASSWORD')}"
+            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"  # Requerido para Azure
         )
         
         queries = [
