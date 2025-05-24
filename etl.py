@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-import pyodbc
+import pymssql
 import pandas as pd
 from dotenv import load_dotenv
 import os
@@ -17,7 +17,7 @@ def transform_data(df):
 def delete_existing_data(conn, table_name, primary_keys, df):
     cursor = conn.cursor()
     for index, row in df.iterrows():
-        where_clause = " AND ".join([f"{pk} = ?" for pk in primary_keys])
+        where_clause = " AND ".join([f"{pk} = %s" for pk in primary_keys])
         cursor.execute(f"DELETE FROM [dbo].[{table_name}] WHERE {where_clause}", [row[pk] for pk in primary_keys])
     conn.commit()
 
@@ -28,11 +28,10 @@ def load_tiempo(conn, df):
         INSERT INTO [dbo].[DIM_TIEMPO_DEST] (
             fechaInicio, DiaInicio, MesInicio, DiaFinal, MesFinal, 
             Turno, DiaDeClases, Semestre, Año
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, 
-        row['fechaInicio'], row['DiaInicio'], row['MesInicio'], row['DiaFinal'],
-        row['MesFinal'], row['Turno'], row['DiaDeClases'], row['Semestre'],
-        row['Año'])
+        (row['fechaInicio'], row['DiaInicio'], row['MesInicio'], row['DiaFinal'],
+         row['MesFinal'], row['Turno'], row['DiaDeClases'], row['Semestre'], row['Año']))
     conn.commit()
     
 def load_estudiantes(conn, df):
@@ -43,21 +42,20 @@ def load_estudiantes(conn, df):
             CodigoE, dniE, nombresE, apellidosE, descripcion, 
             correo, descripcionE, celular, direccion, 
             descripcionD, descripcionCon
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, 
-        row['CodigoE'], row['dniE'], row['nombresE'], row['apellidosE'],
-        row['descripcion'], row['correo'], row['descripcionE'], row['celular'],
-        row['direccion'], row['descripcionD'], row['descripcionCon'])
+        (row['CodigoE'], row['dniE'], row['nombresE'], row['apellidosE'],
+         row['descripcion'], row['correo'], row['descripcionE'], row['celular'],
+         row['direccion'], row['descripcionD'], row['descripcionCon']))
     conn.commit()
 
 def load_categorias(conn, df):
     cursor = conn.cursor()
     for index, row in df.iterrows():
         cursor.execute("""
-        INSERT INTO [dbo].[DIM_CATEGORIA_DEST](
-            idCategoriaE, Categoria) VALUES (?,?)
-            """,
-        row['idCategoriaE'],row['descripcionCE'])
+        INSERT INTO [dbo].[DIM_CATEGORIA_DEST](idCategoriaE, Categoria) VALUES (%s,%s)
+        """,
+        (row['idCategoriaE'], row['descripcionCE']))
     conn.commit()
     
 def load_carreras(conn, df):
@@ -66,9 +64,9 @@ def load_carreras(conn, df):
         cursor.execute("""
         INSERT INTO [dbo].[DIM_CARRERA_DEST] (
             idCarrera, nombreCarrera, descripcionFa
-        ) VALUES (?, ?, ?)
+        ) VALUES (%s, %s, %s)
         """, 
-        row['idCarrera'], row['nombreCarrera'], row['descripcionFa'])
+        (row['idCarrera'], row['nombreCarrera'], row['descripcionFa']))
     conn.commit()
     
 def load_unidades(conn, df):
@@ -77,9 +75,9 @@ def load_unidades(conn, df):
         cursor.execute("""
         INSERT INTO [dbo].[DIM_UNIDAD_DEST](
             idUnidad, descripcionU
-        ) VALUES (?,?)
+        ) VALUES (%s,%s)
         """,
-        row['idUnidad'], row['descripcionU'])
+        (row['idUnidad'], row['descripcionU']))
     conn.commit()    
     
 def load_tipos(conn, df):
@@ -87,32 +85,32 @@ def load_tipos(conn, df):
     for index, row in df.iterrows():
         cursor.execute("""
         INSERT INTO [dbo].[DIM_TIPOCALIFICACION_DEST](
-            idTipo,descripcion
-        ) VALUES (?,?)
+            idTipo, descripcion
+        ) VALUES (%s,%s)
         """,
-        row['idTipo'], row['descripcion'])
-    conn.commit()  
+        (row['idTipo'], row['descripcion']))
+    conn.commit()   
     
 def load_cursos(conn, df):
     cursor= conn.cursor()
     for index, row in df.iterrows():
         cursor.execute("""
         INSERT INTO [dbo].[DIM_CURSO_DEST](
-            idCurso, NombreCurso,NumeroCreditos,CategoriaCurso,Ciclo
-        ) VALUES(?,?,?,?,?)
-                       """,
-        row['idCurso'],row['NombreCurso'],row['NumeroCreditos'],row['descripcionCC'],row['ciclo'])
-    conn.commit()          
+            idCurso, NombreCurso, NumeroCreditos, CategoriaCurso, Ciclo
+        ) VALUES (%s, %s, %s, %s, %s)
+        """,
+        (row['idCurso'], row['NombreCurso'], row['NumeroCreditos'], row['descripcionCC'], row['ciclo']))
+    conn.commit()             
 
 def load_profesores(conn, df):
     cursor= conn.cursor()
     for index, row in df.iterrows():
         cursor.execute("""
         INSERT INTO [dbo].[DIM_PROFESOR_DEST](
-            codigoD, dniProf,nombresD,apellidosD,genero,estadoCivil,correo,celular,direccion,distrito
-            ) VALUES (?,?,?,?,?,?,?,?,?,?)            
+            codigoD, dniProf, nombresD, apellidosD, genero, estadoCivil, correo, celular, direccion, distrito
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)            
         """,
-         row['codigoD'],row['dniProf'],row['nombresD'],row['apellidosD'],row['descripcion'],row['descripcionE'],row['correo'],row['celular'],row['direccion'],row['descripcionD'])
+        (row['codigoD'], row['dniProf'], row['nombresD'], row['apellidosD'], row['descripcion'], row['descripcionE'], row['correo'], row['celular'], row['direccion'], row['descripcionD']))
     conn.commit()
 
 def load_ambiente(conn, df):
@@ -121,9 +119,9 @@ def load_ambiente(conn, df):
         cursor.execute("""
         INSERT INTO [dbo].[DIM_AMBIENTE_DEST](
             aula, idPabellon
-        ) VALUES (?,?)              
+        ) VALUES (%s,%s)              
         """,
-        row['aula'],row['idPabellon'])
+        (row['aula'], row['idPabellon']))
     conn.commit()
     
 def load_desempeno(conn, df):
@@ -133,30 +131,35 @@ def load_desempeno(conn, df):
         INSERT INTO [dbo].[H_DESEMPEÑO_DEST] (
             nota, idUnidad, idTipo, codigoE, idCategoriaE, 
             idCurso, idCarrera, codigoD, fechaInicio, Turno, aula, Pabellon
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, 
-        row['nota'], row['idUnidad'], row['idTipo'], row['codigoE'], row['idCategoriaE'], 
-        row['idCurso'], row['idCarrera'], row['codigoD'], row['fechaInicio'], row['Turno'], 
-        row['aula'], row['Pabellon'])
+        (row['nota'], row['idUnidad'], row['idTipo'], row['codigoE'], row['idCategoriaE'], 
+         row['idCurso'], row['idCarrera'], row['codigoD'], row['fechaInicio'], row['Turno'], 
+         row['aula'], row['Pabellon']))
     conn.commit()
     
 def etl_process():
     try:
-        conn_dimensional = pyodbc.connect(
-            f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
-            f"SERVER={os.getenv('SQL_SERVER')};"
-            f"DATABASE={os.getenv('SQL_DB_DIMENSIONAL')};"
-            f"UID={os.getenv('SQL_USER')};"
-            f"PWD={os.getenv('SQL_PASSWORD')}"
-            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"  # Requerido para Azure
+        conn_dimensional = pymssql.connect(
+            server=os.getenv('SQL_SERVER'),         # Por ejemplo: 'mi-servidor.database.windows.net'
+            user=os.getenv('SQL_USER'),             # Usuario de Azure SQL
+            password=os.getenv('SQL_PASSWORD'),     # Contraseña
+            database=os.getenv('SQL_DB_DIMENSIONAL'),
+            port=1433,
+            encrypt=True,
+            trust_server_certificate=False,         # Para verificar el certificado SSL
+            login_timeout=30
         )
-        conn_relacional = pyodbc.connect(
-            f"DRIVER={{{os.getenv('SQL_DRIVER')}}};"
-            f"SERVER={os.getenv('SQL_SERVER')};"
-            f"DATABASE={os.getenv('SQL_DB_RELACIONAL')};"
-            f"UID={os.getenv('SQL_USER')};"
-            f"PWD={os.getenv('SQL_PASSWORD')}"
-            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"  # Requerido para Azure
+
+        conn_relacional = pymssql.connect(
+            server=os.getenv('SQL_SERVER'),
+            user=os.getenv('SQL_USER'),
+            password=os.getenv('SQL_PASSWORD'),
+            database=os.getenv('SQL_DB_RELACIONAL'),
+            port=1433,
+            encrypt=True,
+            trust_server_certificate=False,
+            login_timeout=30
         )
         
         queries = [
@@ -320,7 +323,7 @@ def etl_process():
 
         return "Proceso ETL ejecutado exitosamente"
 
-    except pyodbc.Error as e:
+    except pymssql.Error as e:
         return f"Error de base de datos: {str(e)}"
     
     except Exception as e:
