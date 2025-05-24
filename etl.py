@@ -147,7 +147,9 @@ def etl_process():
             database=os.getenv('SQL_DB_DIMENSIONAL'),
             port=1433,
             trust_server_certificate=False,         # Para verificar el certificado SSL
-            login_timeout=30
+            login_timeout=30,
+            as_dict=True,
+            conn_properties='Encrypt=True;TrustServerCertificate=False;'
         )
 
         conn_relacional = pymssql.connect(
@@ -158,6 +160,8 @@ def etl_process():
             port=1433,
             trust_server_certificate=False,
             login_timeout=30
+            as_dict=True,
+            conn_properties='Encrypt=True;TrustServerCertificate=False;'
         )
         
         queries = [
