@@ -146,7 +146,6 @@ def etl_process():
             password=os.getenv('SQL_PASSWORD'),     # Contraseña
             database=os.getenv('SQL_DB_DIMENSIONAL'),
             port=1433,
-            encrypt=True,
             trust_server_certificate=False,         # Para verificar el certificado SSL
             login_timeout=30
         )
@@ -157,7 +156,6 @@ def etl_process():
             password=os.getenv('SQL_PASSWORD'),
             database=os.getenv('SQL_DB_RELACIONAL'),
             port=1433,
-            encrypt=True,
             trust_server_certificate=False,
             login_timeout=30
         )
