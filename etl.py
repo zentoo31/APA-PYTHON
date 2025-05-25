@@ -159,7 +159,7 @@ def etl_process():
             database=os.getenv('SQL_DB_RELACIONAL'),
             port=1433,
             trust_server_certificate=False,
-            login_timeout=30
+            login_timeout=30,
             as_dict=True,
             conn_properties='Encrypt=True;TrustServerCertificate=False;'
         )
